@@ -34,7 +34,7 @@ class SampleKafkaConsumer @Inject()(coordinatedShutdown: CoordinatedShutdown) ex
 
   Future {
     while (!stopConsumer.get()) {
-      kafkaConsumer.poll(Duration.ofSeconds(60)).asScala
+      kafkaConsumer.poll(Duration.ofSeconds(3)).asScala
         .foreach(r => {
           logger.info(s"SampleKafkaConsumer receives record: $r")
         })
@@ -44,9 +44,9 @@ class SampleKafkaConsumer @Inject()(coordinatedShutdown: CoordinatedShutdown) ex
   .andThen(_ => kafkaConsumer.close())(executionContext)
   .andThen {
     case Success(_) =>
-      kafkaConsumer.close()
+      logger.info(s"SampleKafkaConsumer succeed.")
     case Failure(e) =>
-      kafkaConsumer.close()
+      logger.error(s"SampleKafkaConsumer fails.", e)
   }(executionContext)
 
   coordinatedShutdown.addTask(CoordinatedShutdown.PhaseServiceStop, "SampleKafkaConsumer-stop"){() =>
